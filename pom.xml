@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.github.lucasyukio</groupId>
 	<artifactId>case-itau</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>case-itau</name>
 	<description>Case Itau</description>
 	<url/>

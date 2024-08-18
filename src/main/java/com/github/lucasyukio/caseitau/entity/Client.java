@@ -1,9 +1,10 @@
 package com.github.lucasyukio.caseitau.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @NoArgsConstructor
+@Table(uniqueConstraints = @UniqueConstraint(name = "UK_account_number", columnNames = { "accountNumber" }))
 public class Client {
 
     @Id
@@ -27,7 +29,6 @@ public class Client {
 
     private String name;
 
-    @Column(unique = true)
     private String accountNumber;
 
     private BigDecimal accountBalance;

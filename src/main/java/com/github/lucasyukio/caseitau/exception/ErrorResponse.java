@@ -1,11 +1,11 @@
 package com.github.lucasyukio.caseitau.exception;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 import java.util.List;
 
 public record ErrorResponse(
-        HttpStatus status,
+        HttpStatusCode status,
         List<String> errors
 ) {
 }

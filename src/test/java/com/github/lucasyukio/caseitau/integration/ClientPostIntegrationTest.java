@@ -24,9 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@AutoConfigureTestDatabase
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ClientIntegrationTest {
+public class ClientPostIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,7 +39,7 @@ public class ClientIntegrationTest {
     @Test
     public void givenClientRequest_whenSaveClient_thenReturnStatus201() throws Exception {
         ClientRequest clientRequest = new ClientRequest(
-                "Test", "123456", BigDecimal.ONE
+                "Test", "1", BigDecimal.ONE
         );
 
         mockMvc.perform(post("/clients")
@@ -49,7 +48,7 @@ public class ClientIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(notNullValue())))
                 .andExpect(jsonPath("$.name", is("Test")))
-                .andExpect(jsonPath("$.accountNumber", is("123456")))
+                .andExpect(jsonPath("$.accountNumber", is("1")))
                 .andExpect(jsonPath("$.accountBalance", is(BigDecimal.ONE.intValue())));
     }
 
@@ -71,16 +70,31 @@ public class ClientIntegrationTest {
     }
 
     @Test
+    public void givenClientRequestWithLetterAccountNumber_whenSaveClient_thenReturnStatus400() throws Exception {
+        ClientRequest clientRequest = new ClientRequest(
+                "Test", "accountNumber", BigDecimal.ONE
+        );
+
+        mockMvc.perform(post("/clients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(clientRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is("BAD_REQUEST")))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors", hasItem("accountNumber: must be only numbers")));
+    }
+
+    @Test
     public void givenClientRequestWithSameAccountNumber_whenSaveClient_thenReturnStatus400() throws Exception {
         ClientRequest clientRequest = new ClientRequest(
-                "Test", "123456", BigDecimal.ONE
+                "Test", "1", BigDecimal.ONE
         );
 
         mockMvc.perform(post("/clients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(clientRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.accountNumber", is("123456")))
+                .andExpect(jsonPath("$.accountNumber", is("1")))
                 .andDo(
                         result -> mockMvc.perform(post("/clients")
                                         .contentType(MediaType.APPLICATION_JSON)

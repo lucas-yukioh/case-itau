@@ -8,32 +8,54 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class CustomExceptionHandler {
 
     @ExceptionHandler({ MethodArgumentNotValidException.class })
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        final List<String> errors = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
 
-        for (final FieldError error : ex.getBindingResult().getFieldErrors())
+        for (FieldError error : ex.getBindingResult().getFieldErrors())
             errors.add(error.getField() + ": " + error.getDefaultMessage());
 
-        for (final ObjectError error : ex.getBindingResult().getGlobalErrors())
+        for (ObjectError error : ex.getBindingResult().getGlobalErrors())
             errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
 
-        final ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, errors);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, errors);
 
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.status());
     }
 
     @ExceptionHandler({ SQLIntegrityConstraintViolationException.class })
     public ResponseEntity<Object> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException ex) {
-        final ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, List.of("Account number already exists"));
+        List<String> errors = new ArrayList<>();
+
+        Map<String, String> sqlConstraints = new HashMap<>();
+        sqlConstraints.put("UK_ACCOUNT_NUMBER", "Account number already exists");
+
+        for (Map.Entry<String, String> constraint : sqlConstraints.entrySet()) {
+            if (ex.getMessage().contains(constraint.getKey())) {
+                errors.add(constraint.getValue());
+            }
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, errors);
+
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.status());
+    }
+
+    @ExceptionHandler({ ResponseStatusException.class })
+    public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getStatusCode(), List.of(Objects.isNull(ex.getReason()) ? ex.getMessage() : ex.getReason()));
 
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.status());
     }
