@@ -2,6 +2,7 @@ package com.github.lucasyukio.caseitau.unit.controller;
 
 import com.github.lucasyukio.caseitau.controller.TransferController;
 import com.github.lucasyukio.caseitau.dto.request.TransferRequest;
+import com.github.lucasyukio.caseitau.dto.response.TransferListResponse;
 import com.github.lucasyukio.caseitau.dto.response.TransferResponse;
 import com.github.lucasyukio.caseitau.service.TransferService;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import java.math.BigDecimal;
 
 import static com.github.lucasyukio.caseitau.util.TransferStatusEnum.COMPLETE;
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -39,5 +41,14 @@ public class TransferControllerTest {
         when(transferService.saveTransfer(transferRequest)).thenReturn(transferResponse);
 
         assertEquals(HttpStatus.CREATED, transferController.saveTransfer(transferRequest).getStatusCode());
+    }
+
+    @Test
+    public void givenAccountNumber_thenReturnTransferListResponse() {
+        TransferListResponse transferListResponse = new TransferListResponse(emptyList(), emptyList());
+
+        when(transferService.getTransfersByAccountNumber("123456")).thenReturn(transferListResponse);
+
+        assertEquals(HttpStatus.OK, transferController.getTransfersByAccountNumber("123456").getStatusCode());
     }
 }

@@ -64,7 +64,7 @@ public class ClientServiceTest {
     public void givenAccountNumber_thenReturnClientResponse() {
         UUID id = UUID.randomUUID();
 
-        when(clientRepository.getClientByAccountNumber("123456")).thenReturn(Optional.of(getClient(id)));
+        when(clientRepository.findByAccountNumber("123456")).thenReturn(Optional.of(getClient(id)));
 
         ClientResponse clientResponse = new ClientResponse(
                 id.toString(), "Test", "123456", BigDecimal.ONE
@@ -75,7 +75,7 @@ public class ClientServiceTest {
 
     @Test
     public void givenInvalidAccountNumber_thenReturnResponseStatusException() {
-        when(clientRepository.getClientByAccountNumber("123456")).thenReturn(Optional.empty());
+        when(clientRepository.findByAccountNumber("123456")).thenReturn(Optional.empty());
 
         Assertions.assertThrows(ResponseStatusException.class, () -> clientService.getClientByAccountNumber("123456"));
     }

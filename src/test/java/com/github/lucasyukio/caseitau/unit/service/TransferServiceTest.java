@@ -1,6 +1,7 @@
 package com.github.lucasyukio.caseitau.unit.service;
 
 import com.github.lucasyukio.caseitau.dto.request.TransferRequest;
+import com.github.lucasyukio.caseitau.dto.response.TransferListResponse;
 import com.github.lucasyukio.caseitau.dto.response.TransferResponse;
 import com.github.lucasyukio.caseitau.entity.Client;
 import com.github.lucasyukio.caseitau.entity.Transfer;
@@ -17,6 +18,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,8 +54,8 @@ public class TransferServiceTest {
 
         UUID id = UUID.randomUUID();
 
-        when(clientRepository.getClientByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
-        when(clientRepository.getClientByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.of(client));
+        when(clientRepository.findByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
+        when(clientRepository.findByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.of(client));
         when(transferRepository.save(any(Transfer.class))).thenReturn(getTransfer(id, client));
 
         TransferResponse transferResponse = new TransferResponse(
@@ -66,7 +71,7 @@ public class TransferServiceTest {
                 BigDecimal.ONE, "1", "2"
         );
 
-        when(clientRepository.getClientByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.empty());
+        when(clientRepository.findByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.empty());
 
         Assertions.assertThrows(ResponseStatusException.class, () -> transferService.saveTransfer(transferRequest));
     }
@@ -81,8 +86,8 @@ public class TransferServiceTest {
         client.setAccountNumber("1");
         client.setAccountBalance(BigDecimal.TEN);
 
-        when(clientRepository.getClientByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
-        when(clientRepository.getClientByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.empty());
+        when(clientRepository.findByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
+        when(clientRepository.findByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.empty());
 
         Assertions.assertThrows(ResponseStatusException.class, () -> transferService.saveTransfer(transferRequest));
     }
@@ -97,8 +102,8 @@ public class TransferServiceTest {
         client.setAccountNumber("1");
         client.setAccountBalance(BigDecimal.TEN);
 
-        when(clientRepository.getClientByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
-        when(clientRepository.getClientByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.of(client));
+        when(clientRepository.findByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
+        when(clientRepository.findByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.of(client));
 
         Assertions.assertThrows(ResponseStatusException.class, () -> transferService.saveTransfer(transferRequest));
     }
@@ -113,10 +118,29 @@ public class TransferServiceTest {
         client.setAccountNumber("1");
         client.setAccountBalance(BigDecimal.TEN);
 
-        when(clientRepository.getClientByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
-        when(clientRepository.getClientByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.of(client));
+        when(clientRepository.findByAccountNumber(transferRequest.senderAccount())).thenReturn(Optional.of(client));
+        when(clientRepository.findByAccountNumber(transferRequest.receiverAccount())).thenReturn(Optional.of(client));
 
         Assertions.assertThrows(ResponseStatusException.class, () -> transferService.saveTransfer(transferRequest));
+    }
+
+    @Test
+    public void givenAccountNumber_thenReturnTransferListResponse() {
+        UUID id = UUID.randomUUID();
+        String accountNumber = "123456";
+        LocalDateTime createdDate = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+
+        when(clientRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.of(getClient(accountNumber)));
+        when(transferRepository.findAllTransfersByAccountNumber(accountNumber)).thenReturn(getTransferList(id, accountNumber, createdDate));
+
+        assertThat(getTransferListResponse(id, accountNumber, createdDate)).usingRecursiveComparison().isEqualTo(transferService.getTransfersByAccountNumber(accountNumber));
+    }
+
+    @Test
+    public void givenInvalidAccountNumber_thenReturnResponseStatusException() {
+        when(clientRepository.findByAccountNumber("123456")).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(ResponseStatusException.class, () -> transferService.getTransfersByAccountNumber("123456"));
     }
 
     private static Transfer getTransfer(UUID id, Client client) {
@@ -129,5 +153,47 @@ public class TransferServiceTest {
         transfer.setCreatedDate(LocalDateTime.now());
 
         return transfer;
+    }
+
+    private static Client getClient(String accountNumber) {
+        Client client = new Client();
+        client.setAccountNumber(accountNumber);
+
+        return client;
+    }
+
+    private static List<Transfer> getTransferList(UUID id, String accountNumber, LocalDateTime createdDate) {
+        Transfer sentTransfer = new Transfer();
+        sentTransfer.setId(id);
+        sentTransfer.setTransferStatus(COMPLETE);
+        sentTransfer.setTransferAmount(BigDecimal.TEN);
+        sentTransfer.setSender(getClient(accountNumber));
+        sentTransfer.setReceiver(getClient("000000"));
+        sentTransfer.setCreatedDate(createdDate);
+
+        Transfer receivedTransfer = new Transfer();
+        receivedTransfer.setId(id);
+        receivedTransfer.setTransferStatus(COMPLETE);
+        receivedTransfer.setTransferAmount(BigDecimal.TEN);
+        receivedTransfer.setTransferStatus(COMPLETE);
+        receivedTransfer.setSender(getClient("000000"));
+        receivedTransfer.setReceiver(getClient(accountNumber));
+        receivedTransfer.setCreatedDate(createdDate);
+
+        List<Transfer> transferList = new ArrayList<>();
+        transferList.add(sentTransfer);
+        transferList.add(receivedTransfer);
+
+        return transferList;
+    }
+
+    private static TransferListResponse getTransferListResponse(UUID id, String accountNumber, LocalDateTime createdDate) {
+        List<TransferResponse> sentTransferList = new ArrayList<>();
+        sentTransferList.add(new TransferResponse(id.toString(), COMPLETE, BigDecimal.TEN, accountNumber, "000000", createdDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss"))));
+
+        List<TransferResponse> receivedTransferList = new ArrayList<>();
+        receivedTransferList.add(new TransferResponse(id.toString(), COMPLETE, BigDecimal.TEN, "000000", accountNumber, createdDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm:ss"))));
+
+        return new TransferListResponse(sentTransferList, receivedTransferList);
     }
 }

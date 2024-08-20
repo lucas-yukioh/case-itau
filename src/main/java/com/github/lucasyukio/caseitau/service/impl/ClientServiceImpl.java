@@ -9,6 +9,7 @@ import com.github.lucasyukio.caseitau.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -46,8 +47,9 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Transactional
     public ClientResponse getClientByAccountNumber(String accountNumber) {
-        Optional<Client> optionalClient = clientRepository.getClientByAccountNumber(accountNumber);
+        Optional<Client> optionalClient = clientRepository.findByAccountNumber(accountNumber);
 
         return toResponse(optionalClient.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENT_NOT_FOUND.getMessage())));
     }

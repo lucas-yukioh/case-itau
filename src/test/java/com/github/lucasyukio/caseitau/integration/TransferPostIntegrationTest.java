@@ -96,6 +96,7 @@ public class TransferPostIntegrationTest {
         CompletableFuture<Void> secondTransfer = CompletableFuture.runAsync(() ->{
             try {
                 latch.await();
+                
                 mockMvc.perform(post("/transfers")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(transferRequest)))
@@ -159,9 +160,9 @@ public class TransferPostIntegrationTest {
     }
 
     @Test
-    public void givenExceededMaxTransferValue_whenSaveTransfer_thenReturnStatus400() throws Exception {
+    public void givenExceededMaxTransferValue_whenSaveTransfer_thenReturnStatus400AndSaveIncompleteTransfer() throws Exception {
         TransferRequest transferRequest = new TransferRequest(
-                BigDecimal.valueOf(20000), "123456", "654321"
+                BigDecimal.valueOf(20000), "999888", "123456"
         );
 
         mockMvc.perform(post("/transfers")
@@ -170,7 +171,14 @@ public class TransferPostIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status", is("BAD_REQUEST")))
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors", hasItem(TRANSFER_MAX_AMOUNT_EXCEEDED.getMessage())));
+                .andExpect(jsonPath("$.errors", hasItem(TRANSFER_MAX_AMOUNT_EXCEEDED.getMessage())))
+                .andDo(
+                        result -> mockMvc.perform(get("/transfers/999888")
+                                        .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.sent", hasSize(1)))
+                                .andExpect(jsonPath("$.sent[0].transferStatus", is("INCOMPLETE")))
+                );
     }
 
     @Test

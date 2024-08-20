@@ -2,7 +2,6 @@ package com.github.lucasyukio.caseitau.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.lucasyukio.caseitau.dto.request.ClientRequest;
-import com.github.lucasyukio.caseitau.service.ClientService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,9 +28,6 @@ public class ClientPostIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ClientService clientService;
 
     @Autowired
     private ObjectMapper objectMapper;

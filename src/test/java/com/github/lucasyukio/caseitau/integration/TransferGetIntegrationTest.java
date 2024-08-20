@@ -9,7 +9,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.github.lucasyukio.caseitau.util.ErrorMessageEnum.CLIENT_NOT_FOUND;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -20,34 +19,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ClientGetIntegrationTest {
+public class TransferGetIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void givenGet_whenGetClients_thenReturnStatus200() throws Exception {
-        mockMvc.perform(get("/clients")
+    public void givenAccountNumber_whenGetTransfers_thenReturnStatus200() throws Exception {
+        mockMvc.perform(get("/transfers/123456")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.clients", hasSize(3)))
-                .andExpect(jsonPath("$.clients[*].name", containsInAnyOrder("John", "Peter", "Parker")));
+                .andExpect(jsonPath("$.sent", hasSize(1)))
+                .andExpect(jsonPath("$.sent[0].senderAccount", is("123456")))
+                .andExpect(jsonPath("$.received", hasSize(1)))
+                .andExpect(jsonPath("$.received[0].receiverAccount", is("123456")));
     }
 
     @Test
-    public void givenAccountNumber_whenGetClient_thenReturnStatus200() throws Exception {
-        mockMvc.perform(get("/clients/123456")
+    public void givenInvalidAccountNumber_whenGetTransfers_thenReturnStatus400() throws Exception {
+        mockMvc.perform(get("/transfers/000000")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is("John")));
-    }
-
-    @Test
-    public void givenInvalidAccountNumber_whenGetClient_thenReturnStatus404() throws Exception {
-        mockMvc.perform(get("/clients/000000")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status", is("NOT_FOUND")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status", is("BAD_REQUEST")))
                 .andExpect(jsonPath("$.errors", hasSize(1)))
                 .andExpect(jsonPath("$.errors", hasItem(CLIENT_NOT_FOUND.getMessage())));
     }
