@@ -1,8 +1,6 @@
 package com.github.lucasyukio.caseitau.controller;
 
 import com.github.lucasyukio.caseitau.dto.request.TransferRequest;
-import com.github.lucasyukio.caseitau.dto.response.ClientListResponse;
-import com.github.lucasyukio.caseitau.dto.response.ClientResponse;
 import com.github.lucasyukio.caseitau.dto.response.TransferListResponse;
 import com.github.lucasyukio.caseitau.dto.response.TransferResponse;
 import com.github.lucasyukio.caseitau.exception.ErrorResponse;
