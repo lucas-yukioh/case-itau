@@ -4,11 +4,12 @@ import com.github.lucasyukio.caseitau.converter.ClientConverter;
 import com.github.lucasyukio.caseitau.dto.request.ClientRequest;
 import com.github.lucasyukio.caseitau.dto.response.ClientResponse;
 import com.github.lucasyukio.caseitau.entity.Client;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClientConverterTest {
 
@@ -23,7 +24,7 @@ public class ClientConverterTest {
         client.setAccountNumber("123456");
         client.setAccountBalance(BigDecimal.ONE);
 
-        Assertions.assertThat(client).usingRecursiveComparison().isEqualTo(ClientConverter.toEntity(clientRequest));
+        assertThat(client).usingRecursiveComparison().ignoringFields("createdDate").isEqualTo(ClientConverter.toEntity(clientRequest));
     }
 
     @Test
@@ -40,6 +41,6 @@ public class ClientConverterTest {
                 id.toString(), "Test", "123456", BigDecimal.ONE
         );
 
-        Assertions.assertThat(clientResponse).usingRecursiveComparison().isEqualTo(ClientConverter.toResponse(client));
+        assertThat(clientResponse).usingRecursiveComparison().isEqualTo(ClientConverter.toResponse(client));
     }
 }

@@ -3,6 +3,7 @@ package com.github.lucasyukio.caseitau.exception;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,9 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @RestControllerAdvice
@@ -37,18 +36,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler({ SQLIntegrityConstraintViolationException.class })
     public ResponseEntity<Object> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException ex) {
-        List<String> errors = new ArrayList<>();
-
-        Map<String, String> sqlConstraints = new HashMap<>();
-        sqlConstraints.put("UK_ACCOUNT_NUMBER", "Account number already exists");
-
-        for (Map.Entry<String, String> constraint : sqlConstraints.entrySet()) {
-            if (ex.getMessage().contains(constraint.getKey())) {
-                errors.add(constraint.getValue());
-            }
-        }
-
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, errors);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, List.of(ex.getMessage()));
 
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.status());
     }

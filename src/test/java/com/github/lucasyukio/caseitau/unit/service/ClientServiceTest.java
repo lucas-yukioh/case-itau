@@ -6,18 +6,22 @@ import com.github.lucasyukio.caseitau.dto.response.ClientResponse;
 import com.github.lucasyukio.caseitau.entity.Client;
 import com.github.lucasyukio.caseitau.repository.ClientRepository;
 import com.github.lucasyukio.caseitau.service.impl.ClientServiceImpl;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ClientServiceTest {
@@ -36,37 +40,44 @@ public class ClientServiceTest {
 
         UUID id = UUID.randomUUID();
 
-        Mockito.when(clientRepository.save(Mockito.any(Client.class))).thenReturn(getClient(id));
+        when(clientRepository.save(any(Client.class))).thenReturn(getClient(id));
 
         ClientResponse clientResponse = new ClientResponse(
                 id.toString(), "Test", "123456", BigDecimal.ONE
         );
 
-        Assertions.assertThat(clientResponse).usingRecursiveComparison().isEqualTo(clientService.saveClient(clientRequest));
+        assertThat(clientResponse).usingRecursiveComparison().isEqualTo(clientService.saveClient(clientRequest));
     }
 
     @Test
     public void givenGetClients_thenReturnClientListResponse() {
         UUID id = UUID.randomUUID();
 
-        Mockito.when(clientRepository.findAll()).thenReturn(getClientList(id));
+        when(clientRepository.findAll()).thenReturn(getClientList(id));
 
         ClientListResponse clientListResponse = new ClientListResponse(getClientResponseList(id));
 
-        Assertions.assertThat(clientListResponse).usingRecursiveComparison().isEqualTo(clientService.getClients());
+        assertThat(clientListResponse).usingRecursiveComparison().isEqualTo(clientService.getClients());
     }
 
     @Test
     public void givenAccountNumber_thenReturnClientResponse() {
         UUID id = UUID.randomUUID();
 
-        Mockito.when(clientRepository.getClientByAccountNumber("123456")).thenReturn(Optional.of(getClient(id)));
+        when(clientRepository.getClientByAccountNumber("123456")).thenReturn(Optional.of(getClient(id)));
 
         ClientResponse clientResponse = new ClientResponse(
                 id.toString(), "Test", "123456", BigDecimal.ONE
         );
 
-        Assertions.assertThat(clientResponse).usingRecursiveComparison().isEqualTo(clientService.getClientByAccountNumber("123456"));
+        assertThat(clientResponse).usingRecursiveComparison().isEqualTo(clientService.getClientByAccountNumber("123456"));
+    }
+
+    @Test
+    public void givenInvalidAccountNumber_thenReturnResponseStatusException() {
+        when(clientRepository.getClientByAccountNumber("123456")).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(ResponseStatusException.class, () -> clientService.getClientByAccountNumber("123456"));
     }
 
     private static Client getClient(UUID id) {

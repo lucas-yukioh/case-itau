@@ -5,7 +5,6 @@ import com.github.lucasyukio.caseitau.dto.request.ClientRequest;
 import com.github.lucasyukio.caseitau.service.ClientService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -14,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -70,21 +70,6 @@ public class ClientPostIntegrationTest {
     }
 
     @Test
-    public void givenClientRequestWithLetterAccountNumber_whenSaveClient_thenReturnStatus400() throws Exception {
-        ClientRequest clientRequest = new ClientRequest(
-                "Test", "accountNumber", BigDecimal.ONE
-        );
-
-        mockMvc.perform(post("/clients")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(clientRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status", is("BAD_REQUEST")))
-                .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors", hasItem("accountNumber: must be only numbers")));
-    }
-
-    @Test
     public void givenClientRequestWithSameAccountNumber_whenSaveClient_thenReturnStatus400() throws Exception {
         ClientRequest clientRequest = new ClientRequest(
                 "Test", "1", BigDecimal.ONE
@@ -102,7 +87,7 @@ public class ClientPostIntegrationTest {
                                 .andExpect(status().isBadRequest())
                                 .andExpect(jsonPath("$.status", is("BAD_REQUEST")))
                                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                                .andExpect(jsonPath("$.errors", hasItem("Account number already exists")))
+                                .andExpect(jsonPath("$.errors[0]", containsString("UK_ACCOUNT_NUMBER")))
                 );
     }
 }

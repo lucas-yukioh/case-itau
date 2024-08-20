@@ -5,17 +5,18 @@ import com.github.lucasyukio.caseitau.dto.request.ClientRequest;
 import com.github.lucasyukio.caseitau.dto.response.ClientListResponse;
 import com.github.lucasyukio.caseitau.dto.response.ClientResponse;
 import com.github.lucasyukio.caseitau.service.ClientService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ClientControllerTest {
@@ -36,18 +37,18 @@ public class ClientControllerTest {
                 "uuid", "Test", "123456", BigDecimal.ONE
         );
 
-        Mockito.when(clientService.saveClient(Mockito.any(ClientRequest.class))).thenReturn(clientResponse);
+        when(clientService.saveClient(clientRequest)).thenReturn(clientResponse);
 
-        Assertions.assertEquals(HttpStatus.CREATED, clientController.saveClient(clientRequest).getStatusCode());
+        assertEquals(HttpStatus.CREATED, clientController.saveClient(clientRequest).getStatusCode());
     }
 
     @Test
     public void givenGetClients_thenReturnClientListResponse() {
         ClientListResponse clientListResponse = new ClientListResponse(getClientResponseList());
 
-        Mockito.when(clientService.getClients()).thenReturn(clientListResponse);
+        when(clientService.getClients()).thenReturn(clientListResponse);
 
-        Assertions.assertEquals(HttpStatus.OK, clientController.getClients().getStatusCode());
+        assertEquals(HttpStatus.OK, clientController.getClients().getStatusCode());
     }
 
     @Test
@@ -56,9 +57,9 @@ public class ClientControllerTest {
                 "uuid", "Test", "123456", BigDecimal.ONE
         );
 
-        Mockito.when(clientService.getClientByAccountNumber("123456")).thenReturn(clientResponse);
+        when(clientService.getClientByAccountNumber("123456")).thenReturn(clientResponse);
 
-        Assertions.assertEquals(HttpStatus.OK, clientController.getClientByAccountNumber("123456").getStatusCode());
+        assertEquals(HttpStatus.OK, clientController.getClientByAccountNumber("123456").getStatusCode());
     }
 
     private static List<ClientResponse> getClientResponseList() {

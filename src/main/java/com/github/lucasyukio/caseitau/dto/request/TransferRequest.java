@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-public record ClientRequest(
-        @NotBlank String name,
-        @NotBlank String accountNumber,
-        @NotNull BigDecimal accountBalance
-) {
+public record TransferRequest(
+        @NotNull BigDecimal transferAmount,
+        @NotBlank String senderAccount,
+        @NotBlank String receiverAccount
+        ) {
 }

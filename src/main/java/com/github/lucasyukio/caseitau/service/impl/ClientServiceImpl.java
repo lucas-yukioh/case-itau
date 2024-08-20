@@ -7,7 +7,6 @@ import com.github.lucasyukio.caseitau.entity.Client;
 import com.github.lucasyukio.caseitau.repository.ClientRepository;
 import com.github.lucasyukio.caseitau.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,6 +17,7 @@ import java.util.Optional;
 
 import static com.github.lucasyukio.caseitau.converter.ClientConverter.toEntity;
 import static com.github.lucasyukio.caseitau.converter.ClientConverter.toResponse;
+import static com.github.lucasyukio.caseitau.util.ErrorMessageEnum.CLIENT_NOT_FOUND;
 
 @Service
 public class ClientServiceImpl implements ClientService {
@@ -49,6 +49,6 @@ public class ClientServiceImpl implements ClientService {
     public ClientResponse getClientByAccountNumber(String accountNumber) {
         Optional<Client> optionalClient = clientRepository.getClientByAccountNumber(accountNumber);
 
-        return toResponse(optionalClient.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Client not found")));
+        return toResponse(optionalClient.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENT_NOT_FOUND.getMessage())));
     }
 }
