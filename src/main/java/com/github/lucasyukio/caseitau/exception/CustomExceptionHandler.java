@@ -3,7 +3,6 @@ package com.github.lucasyukio.caseitau.exception;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -43,7 +42,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler({ ResponseStatusException.class })
     public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(ex.getStatusCode(), List.of(Objects.isNull(ex.getReason()) ? ex.getMessage() : ex.getReason()));
+        ErrorResponse errorResponse = new ErrorResponse((HttpStatus) ex.getStatusCode(), List.of(Objects.isNull(ex.getReason()) ? ex.getMessage() : ex.getReason()));
 
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.status());
     }
